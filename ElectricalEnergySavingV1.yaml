@@ -1,0 +1,67 @@
+blueprint:
+  name: Electricity Saver for Rooms having No Natural Light
+  description: >
+    # by Deepak Soni, Veea Inc
+
+    Purpose: This blueprint will automate closed areas where there is no natural light throghout the day(Wash Rooms, Under Ground Rooms etc)
+    
+    Activity: Turn on respective lights when area is occupied(motion detected) and will turn off the lights when area is unoccupied(No Motion Detected).
+    Also, one an control the lights using switches and light operation(specially) using switches has also been taken cared
+
+  domain: automation
+  source_url:
+  input:
+    motion_entity:
+      name: Motion Sensor
+      description: Motion Sensor
+      selector:
+        entity:
+    light_target:
+      name: Light
+      selector:
+        target:
+          entity:
+            domain: light
+    motion_state_polling_time:
+      name: poll time
+      description: Time in minutes to poll the state of Motion Sensor
+      default: 120
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: minutes
+mode: restart
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: !input motion_entity
+    from: "off"
+    to: "on"
+  - platform: state
+    entity_id: !input motion_entity
+    from: "on"
+    to: "off"
+  - platform: !input  motion_state_polling_time
+condition: []
+action:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: motion_entity
+            state: 'on'
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: light_target
+      - conditions:
+          - condition: state
+            entity_id: motion_entity
+            state: 'off'
+        sequence:
+          - service: light.turn_off
+            target:
+              entity_id: light_target
+    default: []
+  - choose: []
+    default: []
